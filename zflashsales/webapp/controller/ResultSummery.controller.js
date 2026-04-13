@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast) {
+    "sap/m/MessageToast",
+    "sap/ui/export/Spreadsheet"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet) {
     "use strict";
 
     return Controller.extend("zfi.zflashsales.controller.ResultSummery", {
@@ -118,10 +119,10 @@ sap.ui.define([
 
             // Posting Date range
             if (oFilterData.PostingDateFrom) {
-                aFilters.push(new Filter("PostingDate", FilterOperator.GE, new Date(oFilterData.PostingDateFrom)));
+                aFilters.push(new Filter("PostingDateFrom", FilterOperator.GE, new Date(oFilterData.PostingDateFrom)));
             }
             if (oFilterData.PostingDateTo) {
-                aFilters.push(new Filter("PostingDate", FilterOperator.LE, new Date(oFilterData.PostingDateTo)));
+                aFilters.push(new Filter("PostingDateTo", FilterOperator.LE, new Date(oFilterData.PostingDateTo)));
             }
 
             oView.setBusy(true);
@@ -222,7 +223,7 @@ sap.ui.define([
                             CompanyCode: oFirst.CompanyCode || "",
                             FiscalYearPeriod: oFirst.FiscalYearPeriod || "",
                             GLAccount: oFirst.GLAccount || "",
-                            Product: oFirst.Product || "",                            
+                            Product: oFirst.Product || "",
                             entityName: "FlashSalesSummery",
                             fullData: JSON.stringify(aResults),
                             actName: "API"
@@ -244,6 +245,38 @@ sap.ui.define([
         // Download Result as Excel (Bonus)
         //=============================================================
         onDownloadSummery: function () {
+            //DownLoad Excel Spreedsheet using sap.ui.export.Spreadsheet
+            var oView = this.getView();
+            var aResults = oView.getModel("flashSalesData").getProperty("/results");
+            if (!aResults || aResults.length === 0) {
+                MessageToast.show("No data available to download.");
+                return;
+            }
+            var aColumns = [
+                { label: "Source Ledger", property: "sourceledger" },
+                { label: "Company Code", property: "CompanyCode" },
+                { label: "Fiscal Year/Period", property: "FiscalYearPeriod" },
+                { label: "GL Account", property: "GLAccount" },
+                { label: "Product", property: "Product" },
+                { label: "Quantity", property: "Quantity" },
+                { label: "Base Unit", property: "BaseUnit" },
+                { label: "Amount in Transaction Currency", property: "AmountInTransactionCurrency" },
+                { label: "Transaction Currency", property: "TransactionCurrency" },
+                { label: "Amount in Company Code Currency", property: "AmountInCompanyCodeCurrency" },
+                { label: "Company Code Currency", property: "CompanyCodeCurrency" }
+            ];
+            var oSettings = {
+                workbook: { columns: aColumns },
+                dataSource: aResults,
+                fileName: "FlashSalesSummary.xlsx"
+            };
+            var oSpreadsheet = new Spreadsheet(oSettings);
+            oSpreadsheet.build().finally(function () {
+                oSpreadsheet.destroy();
+            });
+
+        },
+        onDownloadSummeryOLD: function () {
             var oView = this.getView();
             var aResults = oView.getModel("flashSalesData").getProperty("/results");
             if (!aResults || aResults.length === 0) {
@@ -271,7 +304,7 @@ sap.ui.define([
 
             // Trigger file download
             var oBlob = new Blob([sCSV], { type: "text/csv;charset=utf-8;" });
-            var sFileName = "FlashSalesSummary.csv";    
+            var sFileName = "FlashSalesSummary.csv";
             if (navigator.msSaveBlob) { // IE 10+
                 navigator.msSaveBlob(oBlob, sFileName);
             } else {

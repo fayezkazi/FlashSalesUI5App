@@ -12,6 +12,8 @@
         growing="true"
         growingThreshold="50"
         noDataText="No company codes found"
+        draggable="true"
+        resizable="true"
         items="{
             path: 'I_CompanyCode>/I_CompanyCode'
         }">
