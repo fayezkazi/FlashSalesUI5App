@@ -75,7 +75,7 @@
                     selectionMode="None"
                     alternateRowColors="true"
                     enableBusyIndicator="true"
-                    threshold="200"
+                    threshold="200"                    
                     noData="No records found. Please adjust your filter criteria and try again."
                     class="flashSalesDataTable sapUiSizeCompact"
                 >

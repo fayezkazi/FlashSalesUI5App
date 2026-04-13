@@ -95,7 +95,16 @@ sap.ui.define([
 
                 // Fiscal Year / Period (mandatory)
                 if (oFilterData.FiscalYearPeriod) {
-                    aFilters.push(new Filter("FiscalYearPeriod", FilterOperator.EQ, oFilterData.FiscalYearPeriod));
+                    var sYear = oFilterData.FiscalYearPeriod.toString().substring(0, 4);
+                    var sPeriodFrom = sYear + "001";
+                    var sPeriodTo = oFilterData.FiscalYearPeriod.toString();
+                    aFilters.push(new Filter({
+                        filters: [
+                            new Filter("FiscalYearPeriod", FilterOperator.GE, sPeriodFrom),
+                            new Filter("FiscalYearPeriod", FilterOperator.LE, sPeriodTo)
+                        ],
+                        and: true
+                    }));
                 }
 
                 // Company Code — multiple values joined with OR
@@ -128,64 +137,86 @@ sap.ui.define([
 
                 oView.setBusy(true);
 
+                // Collect all pages by following OData __next links
+            var iPageSize   = 1000;
+            var aAllResults = [];
+
+            var fnError = function (oError) {
+                oView.setBusy(false);
+                var sMsg = "Failed to load Flash Sales data.";
+                try {
+                    sMsg = JSON.parse(oError.responseText).error.message.value || sMsg;
+                } catch (e) { /* ignore */ }
+                MessageBox.error(sMsg);
+            }.bind(this);
+
+            var fnReadPage = function (iSkip) {
                 oModel.read("/FlashSalesExtractor", {
                     filters: aFilters,
+                    urlParameters: {
+                        "$top":  iPageSize.toString(),
+                        "$skip": iSkip.toString()
+                    },
                     success: function (oData) {
-                        oView.getModel("flashSalesData").setData({ results: oData.results });
-                        oView.getModel("viewData").setProperty("/recordCount", oData.results.length);
-                        oView.setBusy(false);
+                        aAllResults = aAllResults.concat(oData.results);
+
+                        if (oData.results.length === iPageSize) {
+                            // Full page returned — there may be more
+                            fnReadPage(iSkip + iPageSize);
+                        } else {
+                            // Partial or empty page — all records fetched
+                            oView.getModel("flashSalesData").setData({ results: aAllResults });
+                            oView.getModel("viewData").setProperty("/recordCount", aAllResults.length);
+                            oView.setBusy(false);
+                        }
                     }.bind(this),
-                    error: function (oError) {
-                        oView.setBusy(false);
-                        var sMsg = "Failed to load Flash Sales data.";
-                        try {
-                            sMsg = JSON.parse(oError.responseText).error.message.value || sMsg;
-                        } catch (e) { /* ignore */ }
-                        MessageBox.error(sMsg);
-                    }.bind(this)
+                    error: fnError
                 });
+            }.bind(this);
+
+            fnReadPage(0);
             },
 
             //=============================================================
             // Download Result as Excel (Bonus)
             //=============================================================
             onDownloadDetails: function () {
-            //DownLoad Excel Spreedsheet using sap.ui.export.Spreadsheet
-            var oView = this.getView();
-            var aResults = oView.getModel("flashSalesData").getProperty("/results");
-            if (!aResults || aResults.length === 0) {
-                MessageToast.show("No data available to download.");
-                return;
-            }
-            var aColumns = [
-                { label: "Source Ledger", property: "sourceledger" },
-                { label: "Company Code", property: "CompanyCode" },
-                { label: "Accounting Document", property: "AccountingDocument" },
-                { label: "Fiscal Year", property: "FiscalYear" },
-                { label: "Document Reference", property: "DocumentReferenceID" },
-                { label: "Profit Center", property: "ProfitCenter" },
-                { label: "GL Account", property: "GLAccount" },
-                { label: "Product", property: "Product" },
-                { label: "Posting Date", property: "PostingDateFrom" },
-                { label: "Quantity", property: "Quantity" },
-                { label: "Base Unit", property: "BaseUnit" },
-                { label: "Amount in Transaction Currency", property: "AmountInTransactionCurrency" },
-                { label: "Transaction Currency", property: "TransactionCurrency" },
-                { label: "Amount in Company Code Currency", property: "AmountInCompanyCodeCurrency" },
-                { label: "Company Code Currency", property: "CompanyCodeCurrency" }
-            ];
-            var oSettings = {
-                workbook: { columns: aColumns },
-                dataSource: aResults,
-                fileName: "FlashSalesDetails.xlsx"
-            };
-            var oSpreadsheet = new Spreadsheet(oSettings);
-            oSpreadsheet.build().finally(function () {
-                oSpreadsheet.destroy();
-            });
+                //DownLoad Excel Spreedsheet using sap.ui.export.Spreadsheet
+                var oView = this.getView();
+                var aResults = oView.getModel("flashSalesData").getProperty("/results");
+                if (!aResults || aResults.length === 0) {
+                    MessageToast.show("No data available to download.");
+                    return;
+                }
+                var aColumns = [
+                    { label: "Source Ledger", property: "sourceledger" },
+                    { label: "Company Code", property: "CompanyCode" },
+                    { label: "Accounting Document", property: "AccountingDocument" },
+                    { label: "Fiscal Year", property: "FiscalYear" },
+                    { label: "Document Reference", property: "DocumentReferenceID" },
+                    { label: "Profit Center", property: "ProfitCenter" },
+                    { label: "GL Account", property: "GLAccount" },
+                    { label: "Product", property: "Product" },
+                    { label: "Posting Date", property: "PostingDateFrom" },
+                    { label: "Quantity", property: "Quantity" },
+                    { label: "Base Unit", property: "BaseUnit" },
+                    { label: "Amount in Transaction Currency", property: "AmountInTransactionCurrency" },
+                    { label: "Transaction Currency", property: "TransactionCurrency" },
+                    { label: "Amount in Company Code Currency", property: "AmountInCompanyCodeCurrency" },
+                    { label: "Company Code Currency", property: "CompanyCodeCurrency" }
+                ];
+                var oSettings = {
+                    workbook: { columns: aColumns },
+                    dataSource: aResults,
+                    fileName: "FlashSalesDetails.xlsx"
+                };
+                var oSpreadsheet = new Spreadsheet(oSettings);
+                oSpreadsheet.build().finally(function () {
+                    oSpreadsheet.destroy();
+                });
 
             },
-            
+
             onDownloadDetailsOLD: function () {
                 var oView = this.getView();
                 var aResults = oView.getModel("flashSalesData").getProperty("/results");

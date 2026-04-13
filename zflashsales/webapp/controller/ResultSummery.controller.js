@@ -49,11 +49,15 @@ sap.ui.define([
         _updateFilterBar: function (oFilterData) {
             var oViewData = this.getView().getModel("viewData");
 
-            var sCC = oFilterData.CompanyCode && oFilterData.CompanyCode.length > 0
-                ? oFilterData.CompanyCode.join(", ") : "";
+            var aCC = oFilterData.CompanyCode && oFilterData.CompanyCode.length > 0 ? oFilterData.CompanyCode : [];
+            var sCC = aCC.length > 3
+                ? aCC.slice(0, 3).join(", ") + ", ..."
+                : aCC.join(", ");
 
-            var sGL = oFilterData.GLAccount && oFilterData.GLAccount.length > 0
-                ? oFilterData.GLAccount.join(", ") : "";
+            var aGL = oFilterData.GLAccount && oFilterData.GLAccount.length > 0 ? oFilterData.GLAccount : [];
+            var sGL = aGL.length > 3
+                ? aGL.slice(0, 3).join(", ") + ", ..."
+                : aGL.join(", ");
 
             var sDate = "";
             if (oFilterData.PostingDateFrom && oFilterData.PostingDateTo) {
@@ -92,9 +96,18 @@ sap.ui.define([
                 aFilters.push(new Filter("sourceledger", FilterOperator.EQ, oFilterData.SourceLedger));
             }
 
-            // Fiscal Year / Period (mandatory)
+            // Fiscal Year / Period — range from <year>001 to entered period
             if (oFilterData.FiscalYearPeriod) {
-                aFilters.push(new Filter("FiscalYearPeriod", FilterOperator.EQ, oFilterData.FiscalYearPeriod));
+                var sYear = oFilterData.FiscalYearPeriod.toString().substring(0, 4);
+                var sPeriodFrom = sYear + "001";
+                var sPeriodTo   = oFilterData.FiscalYearPeriod.toString();
+                aFilters.push(new Filter({
+                    filters: [
+                        new Filter("FiscalYearPeriod", FilterOperator.GE, sPeriodFrom),
+                        new Filter("FiscalYearPeriod", FilterOperator.LE, sPeriodTo)
+                    ],
+                    and: true
+                }));
             }
 
             // Company Code — multiple values joined with OR
@@ -127,22 +140,43 @@ sap.ui.define([
 
             oView.setBusy(true);
 
-            oModel.read("/FlashSalesSummery", {
-                filters: aFilters,
-                success: function (oData) {
-                    oView.getModel("flashSalesData").setData({ results: oData.results });
-                    oView.getModel("viewData").setProperty("/recordCount", oData.results.length);
-                    oView.setBusy(false);
-                }.bind(this),
-                error: function (oError) {
-                    oView.setBusy(false);
-                    var sMsg = "Failed to load Flash Sales data.";
-                    try {
-                        sMsg = JSON.parse(oError.responseText).error.message.value || sMsg;
-                    } catch (e) { /* ignore */ }
-                    MessageBox.error(sMsg);
-                }.bind(this)
-            });
+            var iPageSize   = 1000;
+            var aAllResults = [];
+
+            var fnError = function (oError) {
+                oView.setBusy(false);
+                var sMsg = "Failed to load Flash Sales data.";
+                try {
+                    sMsg = JSON.parse(oError.responseText).error.message.value || sMsg;
+                } catch (e) { /* ignore */ }
+                MessageBox.error(sMsg);
+            }.bind(this);
+
+            var fnReadPage = function (iSkip) {
+                oModel.read("/FlashSalesSummery", {
+                    filters: aFilters,
+                    urlParameters: {
+                        "$top":  iPageSize.toString(),
+                        "$skip": iSkip.toString()
+                    },
+                    success: function (oData) {
+                        aAllResults = aAllResults.concat(oData.results);
+
+                        if (oData.results.length === iPageSize) {
+                            // Full page returned — there may be more
+                            fnReadPage(iSkip + iPageSize);
+                        } else {
+                            // Partial or empty page — all records fetched
+                            oView.getModel("flashSalesData").setData({ results: aAllResults });
+                            oView.getModel("viewData").setProperty("/recordCount", aAllResults.length);
+                            oView.setBusy(false);
+                        }
+                    }.bind(this),
+                    error: fnError
+                });
+            }.bind(this);
+
+            fnReadPage(0);
         },
 
         // ============================================================

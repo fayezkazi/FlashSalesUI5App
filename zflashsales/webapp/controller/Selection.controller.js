@@ -103,15 +103,15 @@ sap.ui.define([
         },
 
         onCompanyCodeVHSearch: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
+            var sValue = oEvent.getParameter("newValue");
             var oFilter = this._buildWildcardFilter(sValue, ["CompanyCode", "CompanyCodeName"]);
             var aFilters = oFilter ? [oFilter] : [];
-            oEvent.getSource().getBinding("items").filter(aFilters);
+            this.byId("companyCodeVHList").getBinding("items").filter(aFilters);
         },
 
-        onCompanyCodeVHConfirm: function (oEvent) {
+        onCompanyCodeVHConfirm: function () {
             var oMultiInput = this.getView().byId("companyCodeInput");
-            var aSelectedItems = oEvent.getParameter("selectedItems");
+            var aSelectedItems = this.byId("companyCodeVHList").getSelectedItems();
 
             oMultiInput.removeAllTokens();
             aSelectedItems.forEach(function (oItem) {
@@ -122,6 +122,19 @@ sap.ui.define([
                     key: sKey,
                     text: sKey + (sText ? " \u2013 " + sText : "")
                 }));
+            });
+            this._oCompanyCodeDialog.close();
+        },
+
+        onCompanyCodeVHSelectAll: function () {
+            this.byId("companyCodeVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(true);
+            });
+        },
+
+        onCompanyCodeVHDeselectAll: function () {
+            this.byId("companyCodeVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(false);
             });
         },
 
@@ -148,7 +161,7 @@ sap.ui.define([
         },
 
         onGLAccountVHSearch: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
+            var sValue = oEvent.getParameter("newValue");
             this._applyGLAccountFilters(sValue);
         },
 
@@ -180,7 +193,7 @@ sap.ui.define([
                 }
             }
 
-            this._oGLAccountDialog.getBinding("items").filter(aFilters);
+            this.byId("glAccountVHList").getBinding("items").filter(aFilters);
         },
 
         // Parses a wildcard search string (* = any characters) and returns a
@@ -224,9 +237,9 @@ sap.ui.define([
                 : new Filter({ filters: aFieldFilters, and: false });
         },
 
-        onGLAccountVHConfirm: function (oEvent) {
+        onGLAccountVHConfirm: function () {
             var oMultiInput = this.getView().byId("glAccountInput");
-            var aSelectedItems = oEvent.getParameter("selectedItems");
+            var aSelectedItems = this.byId("glAccountVHList").getSelectedItems();
 
             oMultiInput.removeAllTokens();
             aSelectedItems.forEach(function (oItem) {
@@ -238,10 +251,26 @@ sap.ui.define([
                     text: sKey + (sText ? " \u2013 " + sText : "")
                 }));
             });
+            this._oGLAccountDialog.close();
+        },
+
+        onGLAccountVHSelectAll: function () {
+            this.byId("glAccountVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(true);
+            });
+        },
+
+        onGLAccountVHDeselectAll: function () {
+            this.byId("glAccountVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(false);
+            });
         },
 
         onVHCancel: function (oEvent) {
-            oEvent.getSource().close();
+            // Source is SelectDialog (GLAccount) → has .close() directly.
+            // Source is Button inside Dialog endButton (CompanyCode) → parent is the Dialog.
+            var oSource = oEvent.getSource();
+            (typeof oSource.close === "function" ? oSource : oSource.getParent()).close();
         },
 
         // ============================================================

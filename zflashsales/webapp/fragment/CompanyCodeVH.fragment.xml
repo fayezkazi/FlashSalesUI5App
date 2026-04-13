@@ -2,26 +2,53 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <SelectDialog
+    <Dialog
         id="companyCodeVHDialog"
         title="Company Code"
-        multiSelect="true"
-        search=".onCompanyCodeVHSearch"
-        confirm=".onCompanyCodeVHConfirm"
-        cancel=".onVHCancel"
-        growing="true"
-        growingThreshold="50"
-        noDataText="No company codes found"
+        contentWidth="50%"
         draggable="true"
-        resizable="true"
-        items="{
-            path: 'I_CompanyCode>/I_CompanyCode'
-        }">
-        <StandardListItem id ="companyCodeVHItem"
-            title="{I_CompanyCode>CompanyCode}"
-            description="{I_CompanyCode>CompanyCodeName}"
-            info="{I_CompanyCode>Country}"
-        />
-    </SelectDialog>
+        resizable="true">
+
+        <subHeader>
+            <Bar>
+                <contentMiddle>
+                    <SearchField
+                        id="companyCodeVHSearchField"
+                        liveChange=".onCompanyCodeVHSearch"
+                        width="100%" />
+                </contentMiddle>
+                <contentRight>
+                    <Button text="Select All"   press=".onCompanyCodeVHSelectAll" />
+                    <Button text="Deselect All" press=".onCompanyCodeVHDeselectAll" />
+                </contentRight>
+            </Bar>
+        </subHeader>
+
+        <content>
+            <List
+                id="companyCodeVHList"
+                mode="MultiSelect"
+                growing="true"
+                growingThreshold="50"
+                noDataText="No company codes found"
+                items="{
+                    path: 'I_CompanyCode>/I_CompanyCode'
+                }">
+                <StandardListItem
+                    id="companyCodeVHItem"
+                    title="{I_CompanyCode>CompanyCode}"
+                    description="{I_CompanyCode>CompanyCodeName}"
+                    info="{I_CompanyCode>Country}" />
+            </List>
+        </content>
+
+        <beginButton>
+            <Button text="OK" type="Emphasized" press=".onCompanyCodeVHConfirm" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press=".onVHCancel" />
+        </endButton>
+
+    </Dialog>
 
 </core:FragmentDefinition>
