@@ -1,0 +1,117 @@
+/* Enter your custom styles here */
+
+/* ============================================================
+   Flash Sales Extractor – Selection Page Styles
+   ============================================================ */
+
+/* Page content wrapper – centred with a max width */
+.flashSalesSelectionContainer {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem 1.5rem 2rem 1.5rem;
+    box-sizing: border-box;
+}
+
+/* ── Banner ───────────────────────────────────────────────── */
+.flashSalesPageBanner {
+    background: linear-gradient(135deg, #0a6ed1 0%, #0854a0 100%);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.25rem;
+    box-shadow: 0 2px 8px rgba(10, 110, 209, 0.25);
+}
+
+.flashSalesPageBanner .sapMTitle,
+.flashSalesPageBanner .sapMText {
+    color: #ffffff !important;
+}
+
+.flashSalesBannerIcon {
+    color: #ffffff !important;
+    flex-shrink: 0;
+}
+
+/* ── Filter Panel ─────────────────────────────────────────── */
+.flashSalesFilterPanel {
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.flashSalesFilterPanel > .sapMPanelHdr {
+    background-color: #f5f6f7;
+    border-bottom: 2px solid #0a6ed1;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ── Footer / Action Bar ──────────────────────────────────── */
+.flashSalesFooterBar {
+    border-top: 1px solid #d9d9d9;
+    background-color: #f5f6f7;
+}
+
+/* ============================================================
+   Flash Sales Extractor – Result Summary Page Styles
+   ============================================================ */
+
+/* Sub-header filter chip bar */
+.flashSalesResultSubHeader {
+    background-color: #f0f4f8 !important;
+    border-bottom: 1px solid #d1e0f0;
+    padding: 0.25rem 1rem;
+}
+
+/* Table toolbar – blue accent border bottom */
+.flashSalesTableToolbar {
+    background-color: #f5f6f7 !important;
+    border-bottom: 2px solid #0a6ed1;
+}
+
+/* Record count label in table toolbar */
+.flashSalesRecordCountText {
+    color: #0854a0;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Compact table: tighten cell padding */
+.flashSalesDataTable .sapUiTableDataCell {
+    padding-top: 0.25rem    !important;
+    padding-bottom: 0.25rem !important;
+}
+
+/* Alternate row shading reinforcement */
+.flashSalesDataTable .sapUiTableRowAlternate > td {
+    background-color: #f7f9fb !important;
+}
+
+/* ── Result Page Table Container ──────────────────────────── */
+
+/* VBox fills the fixed-height page content area */
+.flashSalesResultContainer {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+}
+
+/* sap.ui.table.Table renders as div.sapUiTable — as a direct flex child
+   it must grow to fill all remaining height.
+   min-height:0 lets visibleRowCountMode=Auto calculate correctly. */
+.flashSalesResultContainer > .sapUiTable {
+    flex: 1 1 auto;
+    min-height: 0;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+/* ── Hint text below the form ─────────────────────────────── */
+.flashSalesHintText {
+    font-size: 0.75rem;
+    color: #6a6d70;
+}

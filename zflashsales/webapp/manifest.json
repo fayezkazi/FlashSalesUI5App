@@ -1,0 +1,162 @@
+{
+  "_version": "1.48.0",
+  "sap.app": {
+    "id": "zfi.zflashsales",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.22.0",
+      "toolsId": "05b71f6f-a5c3-4bb8-b10e-53f89a0f8024"
+    },
+    "dataSources": {
+      "ZFI_FLASH_SALES_EXT_SRV_V2_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZFI_FLASH_SALES_EXT_SRV_V2_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/ZFI_FLASH_SALES_EXT_SRV_V2_VAN.xml"
+        }
+      },
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/ZFI_FLASH_SALES_EXT_SRV_V2/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZFI_FLASH_SALES_EXT_SRV_V2_VAN",
+            "annotation"
+          ],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "annotation": {
+        "type": "ODataAnnotation",
+        "uri": "annotations/annotation.xml",
+        "settings": {
+          "localUri": "annotations/annotation.xml"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.108.9",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.ui.table": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "zfi.zflashsales.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "zfi.zflashsales.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "clearControlAggregation": false
+      },
+      "routes": [
+        {
+          "name": "RouteSelection",
+          "pattern": ":?query:",
+          "target": [
+            "TargetSelection"
+          ]
+        },
+        {
+          "name": "RouteResultSummery",
+          "pattern": "resultSummery/{resultID}",
+          "target": [
+            "TargetResultSummery"
+          ]
+        },
+        {
+          "name": "RouteResultDetails",
+          "pattern": "resultDetails/{resultID}",
+          "target": [
+            "TargetResultDetails"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetSelection": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "Selection",
+          "viewName": "Selection"
+        },
+        "TargetResultSummery": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "ResultSummery",
+          "viewName": "ResultSummery"
+        },
+        "TargetResultDetails": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "ResultDetails",
+          "viewName": "ResultDetails"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "zfi.zflashsales.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "App"
+    }
+  }
+}

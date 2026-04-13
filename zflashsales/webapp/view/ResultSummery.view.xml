@@ -1,0 +1,279 @@
+<mvc:View
+    controllerName="zfi.zflashsales.controller.ResultSummery"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:ui5table="sap.ui.table"
+>
+    <Page
+        id="pageIDResultSummery"
+        title="Flash Sales Summary Report"
+        showNavButton="true"
+        navButtonPress=".onNavBack"
+        backgroundDesign="List"
+        enableScrolling="false"
+    >
+        <!-- ── Page Header Action Buttons ─────────────────────── -->
+        <headerContent>
+            <Button
+                id="sendEmailBtn"
+                text="Send Email"
+                icon="sap-icon://email"
+                press=".onSendEmail"
+            />
+            <Button
+                id="sendAPIBtn"
+                text="Send to API"
+                icon="sap-icon://cloud-sync"
+                type="Emphasized"
+                press=".onSendToAPI"
+            />
+        </headerContent>
+
+        <!-- ── Applied Filter Summary Bar ─────────────────────── -->
+        <subHeader>
+            <Bar class="flashSalesResultSubHeader">
+                <contentLeft>
+                    <core:Icon
+                        src="sap-icon://filter"
+                        class="sapUiTinyMarginEnd"
+                        color="#0854a0"
+                    />
+                    <ObjectStatus
+                        title="Ledger"
+                        text="{viewData>/filters/SourceLedger}"
+                        state="Information"
+                    />
+                    <ObjectStatus
+                        title="Period"
+                        text="{viewData>/filters/FiscalYearPeriod}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                    />
+                    <ObjectStatus
+                        title="Company Code"
+                        text="{viewData>/filters/CompanyCodeDisplay}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                        visible="{= !!${viewData>/filters/CompanyCodeDisplay} }"
+                    />
+                    <ObjectStatus
+                        title="G/L Account"
+                        text="{viewData>/filters/GLAccountDisplay}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                        visible="{= !!${viewData>/filters/GLAccountDisplay} }"
+                    />
+                    <ObjectStatus
+                        title="Posting Date"
+                        text="{viewData>/filters/PostingDateDisplay}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                        visible="{= !!${viewData>/filters/PostingDateDisplay} }"
+                    />
+                </contentLeft>
+                <!-- <contentRight>
+                    <ObjectStatus title="Records" text="{viewData>/recordCount}" state="Success" />
+                </contentRight> -->
+            </Bar>
+        </subHeader>
+
+        <!-- ── Data Table ──────────────────────────────────────── -->
+        <content>
+            <VBox
+                height="100%"
+                width="100%"
+                renderType="Bare"
+                class="flashSalesResultContainer"
+            >
+                <ui5table:Table
+                    id="resultSummeryTable"
+                    rows="{flashSalesData>/results}"
+                    visibleRowCountMode="Auto"
+                    minAutoRowCount="10"
+                    selectionMode="None"
+                    alternateRowColors="true"
+                    enableBusyIndicator="true"
+                    threshold="200"
+                    noData="No records found. Please adjust your filter criteria and try again."
+                    class="flashSalesDataTable sapUiSizeCompact"
+                >
+                    <!-- Table toolbar -->
+                    <ui5table:extension>
+                        <OverflowToolbar class="flashSalesTableToolbar">
+                            <Title
+                                text="Summery Records"
+                                level="H4"
+                            />
+                            <Text
+                                text="{= ${viewData>/recordCount} + ' record(s)'}"
+                                class="flashSalesRecordCountText"
+                            />
+                            <ToolbarSpacer />
+                            <Button
+                                id="SummeryDownload"
+                                icon="sap-icon://download"
+                                text="Download"
+                                press=".onDownloadSummery"
+                            />
+                        </OverflowToolbar>
+                    </ui5table:extension>
+
+                    <!-- Columns -->
+                    <ui5table:columns>
+                        <ui5table:Column
+                            width="8rem"
+                            hAlign="Begin"
+                            sortProperty="sourceledger"
+                            filterProperty="sourceledger"
+                        >
+                            <Label text="Source Ledger" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>sourceledger}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="9rem"
+                            hAlign="Begin"
+                            sortProperty="CompanyCode"
+                            filterProperty="CompanyCode"
+                        >
+                            <Label text="Company Code" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>CompanyCode}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="10rem"
+                            hAlign="Begin"
+                            sortProperty="GLAccount"
+                            filterProperty="GLAccount"
+                        >
+                            <Label text="G/L Account" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>GLAccount}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="10rem"
+                            hAlign="Begin"
+                            sortProperty="Product"
+                            filterProperty="Product"
+                        >
+                            <Label text="Product" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>Product}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="Quantity"
+                        >
+                            <Label text="Quantity" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>Quantity}"
+                                    wrapping="false"
+                                    textAlign="End"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="8rem"
+                            hAlign="Begin"
+                            sortProperty="BaseUnit"
+                            filterProperty="BaseUnit"
+                        >
+                            <Label text="Base Unit" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>BaseUnit}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="16rem"
+                            hAlign="End"
+                            sortProperty="AmountInTransactionCurrency"
+                        >
+                            <Label text="Amt. in Transaction Currency" />
+                            <ui5table:template>
+                                <ObjectNumber
+                                    number="{flashSalesData>AmountInTransactionCurrency}"
+                                    unit="{flashSalesData>TransactionCurrency}"
+                                    emphasized="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="9rem"
+                            hAlign="Begin"
+                            sortProperty="TransactionCurrency"
+                            filterProperty="TransactionCurrency"
+                        >
+                            <Label text="Trans. Currency" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>TransactionCurrency}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="16rem"
+                            hAlign="End"
+                            sortProperty="AmountInCompanyCodeCurrency"
+                        >
+                            <Label text="Amt. in CoCd Currency" />
+                            <ui5table:template>
+                                <ObjectNumber
+                                    number="{flashSalesData>AmountInCompanyCodeCurrency}"
+                                    unit="{flashSalesData>CompanyCodeCurrency}"
+                                    emphasized="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+
+                        <ui5table:Column
+                            width="9rem"
+                            hAlign="Begin"
+                            sortProperty="CompanyCodeCurrency"
+                            filterProperty="CompanyCodeCurrency"
+                        >
+                            <Label text="CoCd Currency" />
+                            <ui5table:template>
+                                <Text
+                                    text="{flashSalesData>CompanyCodeCurrency}"
+                                    wrapping="false"
+                                />
+                            </ui5table:template>
+                        </ui5table:Column>
+                    </ui5table:columns>
+                </ui5table:Table>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

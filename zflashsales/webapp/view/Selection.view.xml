@@ -1,0 +1,145 @@
+<mvc:View controllerName="zfi.zflashsales.controller.Selection"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+
+    <Page id="pageIDSelection" title="{i18n>selectionTitle}" backgroundDesign="List">
+
+        <footer>
+            <OverflowToolbar class="flashSalesFooterBar">
+                <ToolbarSpacer />
+                <Button
+                    id="clearBtn"
+                    text="{i18n>clear}"
+                    press=".onClear"
+                    icon="sap-icon://clear-filter" />
+                <Button
+                    id="displayBtn"
+                    text="{i18n>display}"
+                    type="Emphasized"
+                    press=".onDisplay"
+                    icon="sap-icon://display" />
+            </OverflowToolbar>
+        </footer>
+
+        <content>
+            <VBox class="flashSalesSelectionContainer">
+
+                <!-- Page Header Banner -->
+                <HBox class="flashSalesPageBanner" alignItems="Center">
+                    <core:Icon src="sap-icon://filter-analytics" size="2rem" class="flashSalesBannerIcon" />
+                    <VBox class="sapUiSmallMarginBegin">
+                        <Title text="{i18n>selectionBannerTitle}" level="H3" wrapping="true" />
+                        <Text text="{i18n>selectionBannerSubTitle}" class="sapUiTinyMarginTop" />
+                    </VBox>
+                </HBox>
+
+                <!-- Filter Criteria Panel -->
+                <Panel
+                    id="filterPanel"
+                    headerText="{i18n>filterPanelTitle}"
+                    class="flashSalesFilterPanel sapUiSmallMarginTop">
+
+                    <f:SimpleForm
+                        id="filterForm"
+                        editable="true"
+                        layout="ResponsiveGridLayout"
+                        labelSpanXL="4"
+                        labelSpanL="4"
+                        labelSpanM="4"
+                        labelSpanS="12"
+                        adjustLabelSpan="false"
+                        emptySpanXL="0"
+                        emptySpanL="0"
+                        emptySpanM="0"
+                        emptySpanS="0"
+                        columnsXL="2"
+                        columnsL="2"
+                        columnsM="1"
+                        singleContainerFullSize="false">
+                        <f:content>
+
+                            <!-- Source Ledger (Mandatory, Single, Default 0L) -->
+                            <Label
+                                id="lbl_SourceLedger"
+                                text="{i18n>sourceLedger}"
+                                required="true" />
+                            <Input
+                                id="sourceLedgerInput"
+                                value="0L"
+                                maxLength="2"
+                                editable="false"
+                                tooltip="{i18n>sourceLedgerTooltip}" />
+
+                            <!-- Fiscal Year / Period (Mandatory, Single) -->
+                            <Label
+                                id="lbl_FiscalYearPeriod"
+                                text="{i18n>fiscalYearPeriod}"
+                                required="true" />
+                            <Input
+                                id="fiscalYearPeriodInput"
+                                placeholder="{i18n>fiscalYearPeriodPlaceholder}"
+                                maxLength="7"
+                                tooltip="{i18n>fiscalYearPeriodTooltip}"
+                                liveChange=".onFiscalYearPeriodLiveChange" />
+
+                            <!-- Company Code (Optional, Multiple) -->
+                            <Label
+                                id="lbl_CompanyCode"
+                                text="{i18n>companyCode}" />
+                            <MultiInput
+                                id="companyCodeInput"
+                                placeholder="{i18n>companyCodePlaceholder}"
+                                showValueHelp="true"
+                                valueHelpRequest=".onCompanyCodeVHRequest"
+                                submit=".onMultiInputSubmit" />
+
+                            <!-- G/L Account (Optional, Multiple) -->
+                            <Label
+                                id="lbl_GLAccount"
+                                text="{i18n>glAccount}" />
+                            <MultiInput
+                                id="glAccountInput"
+                                placeholder="{i18n>glAccountPlaceholder}"
+                                showValueHelp="true"
+                                valueHelpRequest=".onGLAccountVHRequest"
+                                submit=".onMultiInputSubmit" />
+
+                            <!-- Posting Date (Optional, Range) -->
+                            <Label
+                                id="lbl_PostingDate"
+                                text="{i18n>postingDate}" />
+                            <DateRangeSelection
+                                id="postingDateRange"
+                                placeholder="{i18n>postingDatePlaceholder}"
+                                displayFormat="dd/MM/yyyy" />
+
+                            <!-- Report Type (Mandatory) -->
+                            <Label
+                                id="lbl_ReportType"
+                                text="{i18n>reportType}"
+                                required="true" />
+                            <ComboBox
+                                id="reportTypeCombo"
+                                selectedKey="S"
+                                placeholder="{i18n>reportTypePlaceholder}">
+                                <core:Item key="S" text="{i18n>summarizedReport}" />
+                                <core:Item key="D" text="{i18n>detailedView}" />
+                            </ComboBox>
+
+                        </f:content>
+                    </f:SimpleForm>
+                </Panel>
+
+                <!-- Mandatory Field Legend -->
+                <HBox class="sapUiTinyMarginTop sapUiSmallMarginBegin" alignItems="Center">
+                    <core:Icon src="sap-icon://sys-help-2" size="0.75rem" color="var(--sapNeutralColor)" />
+                    <Text text="{i18n>mandatoryFieldHint}" class="flashSalesHintText sapUiTinyMarginBegin" />
+                </HBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

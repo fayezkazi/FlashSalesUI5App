@@ -1,0 +1,7 @@
+<mvc:View controllerName="zfi.zflashsales.controller.ResultDetails"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <Page id="pageIDResultDetails" title="{i18n>title}">
+        <content />
+    </Page>
+</mvc:View>
