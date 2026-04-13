@@ -11,6 +11,8 @@
         cancel=".onVHCancel"
         growing="true"
         growingThreshold="50"
+        draggable="true"
+        resizable="true"        
         noDataText="No G/L accounts found"
         items="{
             path: 'I_GLAccountStdVH>/I_GLAccountStdVH'
