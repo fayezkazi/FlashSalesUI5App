@@ -81,7 +81,7 @@
                             <Input
                                 id="fiscalYearPeriodInput"
                                 placeholder="{i18n>fiscalYearPeriodPlaceholder}"
-                                maxLength="7"
+                                maxLength="8"
                                 tooltip="{i18n>fiscalYearPeriodTooltip}"
                                 liveChange=".onFiscalYearPeriodLiveChange" />
 
@@ -105,6 +105,28 @@
                                 placeholder="{i18n>glAccountPlaceholder}"
                                 showValueHelp="true"
                                 valueHelpRequest=".onGLAccountVHRequest"
+                                submit=".onMultiInputSubmit" />
+
+                            <!-- Product (Optional, Multiple) -->
+                            <Label
+                                id="lbl_Product"
+                                text="{i18n>product}" />
+                            <MultiInput
+                                id="productInput"
+                                placeholder="{i18n>productPlaceholder}"
+                                showValueHelp="true"
+                                valueHelpRequest=".onProductVHRequest"
+                                submit=".onMultiInputSubmit" />
+
+                            <!-- Profit Center (Optional, Multiple) -->
+                            <Label
+                                id="lbl_ProfitCenter"
+                                text="{i18n>profitCenter}" />
+                            <MultiInput
+                                id="profitCenterInput"
+                                placeholder="{i18n>profitCenterPlaceholder}"
+                                showValueHelp="true"
+                                valueHelpRequest=".onProfitCenterVHRequest"
                                 submit=".onMultiInputSubmit" />
 
                             <!-- Posting Date (Optional, Range) -->

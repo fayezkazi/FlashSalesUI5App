@@ -1,0 +1,53 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        id="profitCenterVHDialog"
+        title="Profit Center"
+        contentWidth="50%"
+        draggable="true"
+        resizable="true">
+
+        <subHeader>
+            <Bar>
+                <contentMiddle>
+                    <SearchField
+                        id="profitCenterVHSearchField"
+                        liveChange=".onProfitCenterVHSearch"
+                        width="100%" />
+                </contentMiddle>
+                <contentRight>
+                    <Button text="Select All"   press=".onProfitCenterVHSelectAll" />
+                    <Button text="Deselect All" press=".onProfitCenterVHDeselectAll" />
+                </contentRight>
+            </Bar>
+        </subHeader>
+
+        <content>
+            <List
+                id="profitCenterVHList"
+                mode="MultiSelect"
+                growing="true"
+                growingThreshold="50"
+                noDataText="No profit centers found"
+                items="{
+                    path: 'I_ProfitCenterStdVH>/I_ProfitCenterStdVH'
+                }">
+                <StandardListItem
+                    title="{I_ProfitCenterStdVH>ProfitCenter}"
+                    description="{I_ProfitCenterStdVH>ProfitCenter_Text}"
+                    type="Active" />
+            </List>
+        </content>
+
+        <beginButton>
+            <Button text="OK" type="Emphasized" press=".onProfitCenterVHConfirm" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press=".onVHCancel" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

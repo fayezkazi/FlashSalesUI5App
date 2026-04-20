@@ -5,8 +5,13 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "sap/ui/export/Spreadsheet"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet) {
+    "sap/ui/export/Spreadsheet",
+    "sap/m/Dialog",
+    "sap/m/Input",
+    "sap/m/Button",
+    "sap/m/Label",
+    "sap/m/VBox"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet, Dialog, Input, Button, Label, VBox) {
     "use strict";
 
     return Controller.extend("zfi.zflashsales.controller.ResultSummery", {
@@ -15,7 +20,7 @@ sap.ui.define([
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("RouteResultSummery").attachPatternMatched(this._onRouteMatched, this);
 
-            // View state model: filter chips + record count
+            // View state model: filter chips, record count, and KPI tiles
             this.getView().setModel(new JSONModel({
                 filters: {
                     SourceLedger: "",
@@ -24,7 +29,9 @@ sap.ui.define([
                     GLAccountDisplay: "",
                     PostingDateDisplay: ""
                 },
-                recordCount: 0
+                recordCount: 0,
+                amountByCurrency: [],
+                quantityByUnit: []
             }), "viewData");
 
             // Empty data model for the table
@@ -96,11 +103,14 @@ sap.ui.define([
                 aFilters.push(new Filter("sourceledger", FilterOperator.EQ, oFilterData.SourceLedger));
             }
 
-            // Fiscal Year / Period — range from <year>001 to entered period
+            // Fiscal Year / Period — input format PPP/YYYY (e.g. 007/2021)
+            // Convert to OData range: GE YYYY001 LE YYYYPPP
             if (oFilterData.FiscalYearPeriod) {
-                var sYear = oFilterData.FiscalYearPeriod.toString().substring(0, 4);
+                var aParts = oFilterData.FiscalYearPeriod.toString().split("/");
+                var sPeriod = aParts[0]; // "007"
+                var sYear   = aParts[1]; // "2021"
                 var sPeriodFrom = sYear + "001";
-                var sPeriodTo   = oFilterData.FiscalYearPeriod.toString();
+                var sPeriodTo   = sYear + sPeriod;
                 aFilters.push(new Filter({
                     filters: [
                         new Filter("FiscalYearPeriod", FilterOperator.GE, sPeriodFrom),
@@ -169,6 +179,29 @@ sap.ui.define([
                             // Partial or empty page — all records fetched
                             oView.getModel("flashSalesData").setData({ results: aAllResults });
                             oView.getModel("viewData").setProperty("/recordCount", aAllResults.length);
+
+                            // KPI: Total Amount grouped by CompanyCodeCurrency
+                            var oAmountMap = {};
+                            aAllResults.forEach(function (r) {
+                                var sCurr = r.CompanyCodeCurrency || "";
+                                oAmountMap[sCurr] = (oAmountMap[sCurr] || 0) + parseFloat(r.AmountInCompanyCodeCurrency || 0);
+                            });
+                            var aAmountByCurrency = Object.keys(oAmountMap).map(function (sCurr) {
+                                return { currency: sCurr, amount: oAmountMap[sCurr].toFixed(2) };
+                            });
+                            oView.getModel("viewData").setProperty("/amountByCurrency", aAmountByCurrency);
+
+                            // KPI: Total Quantity grouped by BaseUnit
+                            var oQtyMap = {};
+                            aAllResults.forEach(function (r) {
+                                var sUnit = r.BaseUnit || "";
+                                oQtyMap[sUnit] = (oQtyMap[sUnit] || 0) + parseFloat(r.Quantity || 0);
+                            });
+                            var aQuantityByUnit = Object.keys(oQtyMap).map(function (sUnit) {
+                                return { unit: sUnit, quantity: parseFloat(oQtyMap[sUnit].toFixed(3)) };
+                            });
+                            oView.getModel("viewData").setProperty("/quantityByUnit", aQuantityByUnit);
+
                             oView.setBusy(false);
                         }
                     }.bind(this),
@@ -275,11 +308,109 @@ sap.ui.define([
             });
         },
 
+        onPCDownload: function () {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel();
+            var aResults = oView.getModel("flashSalesData").getProperty("/results");
+
+            if (!aResults || aResults.length === 0) {
+                MessageToast.show("No data available to download.");
+                return;
+            }
+
+            MessageBox.confirm("You want to download the Flash Sales Summary File?", {
+                onClose: function (sAction) {
+                    if (sAction !== MessageBox.Action.OK) { return; }
+
+                    // Open the Window File Browser to choose the location to save the file
+                    var fnCallDownload = function (s_filePath) {
+                        oView.setBusy(true);
+                        var oFirst = aResults[0];
+
+                        oModel.callFunction("/takeAction", {
+                            method: "POST",
+                            urlParameters: {
+                                sourceledger: oFirst.sourceledger || "",
+                                CompanyCode: oFirst.CompanyCode || "",
+                                FiscalYearPeriod: oFirst.FiscalYearPeriod || "",
+                                GLAccount: oFirst.GLAccount || "",
+                                Product: oFirst.Product || "",
+                                entityName: "FlashSalesSummery",
+                                fullData: JSON.stringify(aResults),
+                                actName: "PCDOWNLOAD",
+                                filePath: s_filePath
+                            },
+                            success: function () {
+                                oView.setBusy(false);
+                                MessageToast.show("File downloaded successfully.");
+                            }.bind(this),
+                            error: function () {
+                                oView.setBusy(false);
+                                MessageBox.error("Failed to download file. Please try again.");
+                            }.bind(this)
+                        });
+                    }.bind(this);
+
+                    var oFirst = aResults[0];
+                    var sSuggestedName = "FS_" + (oFirst.CompanyCode || "") + "_" + (oFirst.FiscalYearPeriod || "") + ".TXT";
+                    var sNtId = (sap.ushell && sap.ushell.Container)
+                        ? sap.ushell.Container.getUser().getId()
+                        : "01301F744";
+                    var sDefaultPath = "C:\\Users\\" + sNtId + "\\Downloads\\" + sSuggestedName;
+
+                    var oPathInput = new Input({
+                        value: sDefaultPath,
+                        width: "100%"
+                    });
+
+                    var oFileDialog = new Dialog({
+                        title: "Select File Save Location",
+                        contentWidth: "50%",
+                        resizable: true,
+                        draggable: true,
+                        content: [
+                            new VBox({
+                                renderType: "Bare",
+                                items: [
+                                    new Label({ text: "File Path:", labelFor: oPathInput }),
+                                    oPathInput
+                                ]
+                            })
+                        ],
+                        beginButton: new Button({
+                            text: "OK",
+                            type: "Emphasized",
+                            press: function () {
+                                var s_filePath = oPathInput.getValue().trim();
+                                if (!s_filePath) {
+                                    MessageToast.show("Please enter a file path.");
+                                    return;
+                                }
+                                oFileDialog.close();
+                                fnCallDownload(s_filePath);
+                            }
+                        }),
+                        endButton: new Button({
+                            text: "Cancel",
+                            press: function () {
+                                oFileDialog.close();
+                            }
+                        }),
+                        afterClose: function () {
+                            oFileDialog.destroy();
+                        }
+                    });
+
+                    oFileDialog.open();
+                }.bind(this)
+            });
+        },
+
         //=============================================================
-        // Download Result as Excel (Bonus)
+        // Download Result as Excel File
         //=============================================================
         onDownloadSummery: function () {
-            //DownLoad Excel Spreedsheet using sap.ui.export.Spreadsheet
+            //DownLoad Excel File
             var oView = this.getView();
             var aResults = oView.getModel("flashSalesData").getProperty("/results");
             if (!aResults || aResults.length === 0) {

@@ -17,6 +17,12 @@
         <!-- ── Page Header Action Buttons ─────────────────────── -->
         <headerContent>
             <Button
+                id="pdfDownloadBtn"
+                text="PC Download"
+                icon="sap-icon://download"
+                press=".onPCDownload"
+            />        
+            <Button
                 id="sendEmailBtn"
                 text="Send Email"
                 icon="sap-icon://email"
@@ -87,6 +93,43 @@
                 renderType="Bare"
                 class="flashSalesResultContainer"
             >
+               <!-- ── KPI Summary Strip ──────────────────────────── -->
+                 <VBox
+                    class="flashSalesKPIBar"
+                    width="100%"
+                >
+                    <!-- Row 1: Total Amount by CoCd Currency -->
+                    <HBox alignItems="Center" class="flashSalesKPIRow">
+                        <core:Icon src="sap-icon://money-bills" size="1rem" class="flashSalesKPIRowIcon sapUiSmallMarginEnd" />
+                        <Label text="Total Amount (CoCd Currency):" class="flashSalesKPIRowLabel sapUiSmallMarginEnd" />
+                        <HBox items="{viewData>/amountByCurrency}" wrap="Wrap">
+                            <items>
+                                <ObjectNumber
+                                    number="{viewData>amount}"
+                                    unit="{viewData>currency}"
+                                    class="flashSalesKPIRowValue sapUiSmallMarginEnd"
+                                    emphasized="false"
+                                />
+                            </items>
+                        </HBox>
+                    </HBox>
+                    <!-- Row 2: Total Quantity by Base Unit -->
+                    <HBox alignItems="Center" class="flashSalesKPIRow flashSalesKPIRowDivider">
+                        <core:Icon src="sap-icon://measure" size="1rem" class="flashSalesKPIRowIcon sapUiSmallMarginEnd" />
+                        <Label text="Total Quantity:" class="flashSalesKPIRowLabel sapUiSmallMarginEnd" />
+                        <HBox items="{viewData>/quantityByUnit}" wrap="Wrap">
+                            <items>
+                                <ObjectNumber
+                                    number="{viewData>quantity}"
+                                    unit="{viewData>unit}"
+                                    class="flashSalesKPIRowValue sapUiSmallMarginEnd"
+                                    emphasized="false"
+                                />
+                            </items>
+                        </HBox>
+                    </HBox>
+                </VBox> 
+
                 <ui5table:Table
                     id="resultSummeryTable"
                     rows="{flashSalesData>/results}"
@@ -103,18 +146,21 @@
                     <ui5table:extension>
                         <OverflowToolbar class="flashSalesTableToolbar">
                             <Title
-                                text="Summery Records"
+                                text="Summary Records"
                                 level="H4"
                             />
-                            <Text
+                            <ObjectStatus
                                 text="{= ${viewData>/recordCount} + ' record(s)'}"
-                                class="flashSalesRecordCountText"
+                                state="Information"
+                                icon="sap-icon://detail-view"
+                                class="flashSalesRecordCountBadge"
                             />
                             <ToolbarSpacer />
                             <Button
                                 id="SummeryDownload"
-                                icon="sap-icon://download"
+                                icon="sap-icon://excel-attachment"
                                 text="Download"
+                                type="Default"
                                 press=".onDownloadSummery"
                             />
                         </OverflowToolbar>
@@ -222,6 +268,7 @@
                                 <ObjectNumber
                                     number="{flashSalesData>AmountInTransactionCurrency}"
                                     unit="{flashSalesData>TransactionCurrency}"
+                                    state="{= ${flashSalesData>AmountInTransactionCurrency} &lt; 0 ? 'Error' : 'None'}"
                                     emphasized="false"
                                 />
                             </ui5table:template>
@@ -252,6 +299,7 @@
                                 <ObjectNumber
                                     number="{flashSalesData>AmountInCompanyCodeCurrency}"
                                     unit="{flashSalesData>CompanyCodeCurrency}"
+                                    state="{= ${flashSalesData>AmountInCompanyCodeCurrency} &lt; 0 ? 'Error' : 'None'}"
                                     emphasized="false"
                                 />
                             </ui5table:template>

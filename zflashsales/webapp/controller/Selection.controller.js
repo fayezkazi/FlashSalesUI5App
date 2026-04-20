@@ -68,6 +68,48 @@ sap.ui.define([
                     }
                 });
 
+            } else if (sId.endsWith("productInput")) {
+                oModel.read("/I_ProductStdVH", {
+                    filters: [new Filter("Product", FilterOperator.EQ, sValue)],
+                    urlParameters: { "$top": "1" },
+                    success: function (oData) {
+                        if (oData.results && oData.results.length > 0) {
+                            var sText = oData.results[0].Product_Text;
+                            oInput.addToken(new Token({
+                                key: sValue,
+                                text: sValue + (sText ? " \u2013 " + sText : "")
+                            }));
+                            oInput.setValue("");
+                        } else {
+                            MessageBox.error("Invalid Product: \"" + sValue + "\"");
+                        }
+                    },
+                    error: function () {
+                        MessageBox.error("Could not validate Product.");
+                    }
+                });
+
+            } else if (sId.endsWith("profitCenterInput")) {
+                oModel.read("/I_ProfitCenterStdVH", {
+                    filters: [new Filter("ProfitCenter", FilterOperator.EQ, sValue)],
+                    urlParameters: { "$top": "1" },
+                    success: function (oData) {
+                        if (oData.results && oData.results.length > 0) {
+                            var sText = oData.results[0].ProfitCenter_Text;
+                            oInput.addToken(new Token({
+                                key: sValue,
+                                text: sValue + (sText ? " \u2013 " + sText : "")
+                            }));
+                            oInput.setValue("");
+                        } else {
+                            MessageBox.error("Invalid Profit Center: \"" + sValue + "\"");
+                        }
+                    },
+                    error: function () {
+                        MessageBox.error("Could not validate Profit Center.");
+                    }
+                });
+
             } else {
                 oInput.addToken(new Token({ key: sValue, text: sValue }));
                 oInput.setValue("");
@@ -75,8 +117,19 @@ sap.ui.define([
         },
 
         onFiscalYearPeriodLiveChange: function (oEvent) {
-            if (oEvent.getSource().getValue()) {
-                oEvent.getSource().setValueState("None");
+            var oInput = oEvent.getSource();
+            var sValue = oInput.getValue();
+            if (!sValue) {
+                oInput.setValueState("None");
+                return;
+            }
+            // Accept format PPP/YYYY — exactly 3 digits, slash, 4 digits
+            var rFormat = /^\d{3}\/\d{4}$/;
+            if (rFormat.test(sValue)) {
+                oInput.setValueState("None");
+            } else {
+                oInput.setValueState("Error");
+                oInput.setValueStateText("Invalid format. Please enter in PPP/YYYY format (e.g. 007/2021).");
             }
         },
 
@@ -274,6 +327,118 @@ sap.ui.define([
         },
 
         // ============================================================
+        // Value Help – Product (I_ProductStdVH)
+        // ============================================================
+
+        onProductVHRequest: function () {
+            var oView = this.getView();
+
+            if (!this._oProductDialog) {
+                this.loadFragment({
+                    name: "zfi.zflashsales.fragment.ProductVH"
+                }).then(function (oDialog) {
+                    oDialog.setModel(oView.getModel(), "I_ProductStdVH");
+                    this._oProductDialog = oDialog;
+                    this._oProductDialog.open();
+                }.bind(this));
+            } else {
+                this._oProductDialog.open();
+            }
+        },
+
+        onProductVHSearch: function (oEvent) {
+            var sValue = oEvent.getParameter("newValue");
+            var oFilter = this._buildWildcardFilter(sValue, ["Product", "Product_Text"]);
+            var aFilters = oFilter ? [oFilter] : [];
+            this.byId("productVHList").getBinding("items").filter(aFilters);
+        },
+
+        onProductVHConfirm: function () {
+            var oMultiInput = this.getView().byId("productInput");
+            var aSelectedItems = this.byId("productVHList").getSelectedItems();
+
+            oMultiInput.removeAllTokens();
+            aSelectedItems.forEach(function (oItem) {
+                var oCtx = oItem.getBindingContext("I_ProductStdVH");
+                var sKey  = oCtx.getProperty("Product");
+                var sText = oCtx.getProperty("Product_Text");
+                oMultiInput.addToken(new Token({
+                    key: sKey,
+                    text: sKey + (sText ? " \u2013 " + sText : "")
+                }));
+            });
+            this._oProductDialog.close();
+        },
+
+        onProductVHSelectAll: function () {
+            this.byId("productVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(true);
+            });
+        },
+
+        onProductVHDeselectAll: function () {
+            this.byId("productVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(false);
+            });
+        },
+
+        // ============================================================
+        // Value Help – Profit Center (I_ProfitCenterStdVH)
+        // ============================================================
+
+        onProfitCenterVHRequest: function () {
+            var oView = this.getView();
+
+            if (!this._oProfitCenterDialog) {
+                this.loadFragment({
+                    name: "zfi.zflashsales.fragment.ProfitCenterVH"
+                }).then(function (oDialog) {
+                    oDialog.setModel(oView.getModel(), "I_ProfitCenterStdVH");
+                    this._oProfitCenterDialog = oDialog;
+                    this._oProfitCenterDialog.open();
+                }.bind(this));
+            } else {
+                this._oProfitCenterDialog.open();
+            }
+        },
+
+        onProfitCenterVHSearch: function (oEvent) {
+            var sValue = oEvent.getParameter("newValue");
+            var oFilter = this._buildWildcardFilter(sValue, ["ProfitCenter", "ProfitCenter_Text"]);
+            var aFilters = oFilter ? [oFilter] : [];
+            this.byId("profitCenterVHList").getBinding("items").filter(aFilters);
+        },
+
+        onProfitCenterVHConfirm: function () {
+            var oMultiInput = this.getView().byId("profitCenterInput");
+            var aSelectedItems = this.byId("profitCenterVHList").getSelectedItems();
+
+            oMultiInput.removeAllTokens();
+            aSelectedItems.forEach(function (oItem) {
+                var oCtx = oItem.getBindingContext("I_ProfitCenterStdVH");
+                var sKey  = oCtx.getProperty("ProfitCenter");
+                var sText = oCtx.getProperty("ProfitCenter_Text");
+                oMultiInput.addToken(new Token({
+                    key: sKey,
+                    text: sKey + (sText ? " \u2013 " + sText : "")
+                }));
+            });
+            this._oProfitCenterDialog.close();
+        },
+
+        onProfitCenterVHSelectAll: function () {
+            this.byId("profitCenterVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(true);
+            });
+        },
+
+        onProfitCenterVHDeselectAll: function () {
+            this.byId("profitCenterVHList").getItems().forEach(function (oItem) {
+                oItem.setSelected(false);
+            });
+        },
+
+        // ============================================================
         // Clear & Display
         // ============================================================
 
@@ -290,6 +455,14 @@ sap.ui.define([
             var oGL = oView.byId("glAccountInput");
             oGL.removeAllTokens();
             oGL.setValue("").setValueState("None");
+
+            var oProd = oView.byId("productInput");
+            oProd.removeAllTokens();
+            oProd.setValue("").setValueState("None");
+
+            var oPC = oView.byId("profitCenterInput");
+            oPC.removeAllTokens();
+            oPC.setValue("").setValueState("None");
 
             var oDRS = oView.byId("postingDateRange");
             oDRS.setDateValue(null);
@@ -308,6 +481,8 @@ sap.ui.define([
             var oRT    = oView.byId("reportTypeCombo");
             var oCC    = oView.byId("companyCodeInput");
             var oGL    = oView.byId("glAccountInput");
+            var oProd  = oView.byId("productInput");
+            var oPC    = oView.byId("profitCenterInput");
             var oDRS   = oView.byId("postingDateRange");
             var bValid = true;
 
@@ -321,7 +496,11 @@ sap.ui.define([
 
             if (!oFP.getValue().trim()) {
                 oFP.setValueState("Error");
-                oFP.setValueStateText("Fiscal Year / Period is required (e.g. 2024001).");
+                oFP.setValueStateText("Fiscal Year / Period is required (e.g. 007/2021).");
+                bValid = false;
+            } else if (!/^\d{3}\/\d{4}$/.test(oFP.getValue().trim())) {
+                oFP.setValueState("Error");
+                oFP.setValueStateText("Invalid format. Please enter in PPP/YYYY format (e.g. 007/2021).");
                 bValid = false;
             } else {
                 oFP.setValueState("None");
@@ -345,6 +524,8 @@ sap.ui.define([
                 FiscalYearPeriod: oFP.getValue().trim(),
                 CompanyCode:      oCC.getTokens().map(function (t) { return t.getKey(); }),
                 GLAccount:        oGL.getTokens().map(function (t) { return t.getKey(); }),
+                Product:          oProd.getTokens().map(function (t) { return t.getKey(); }),
+                ProfitCenter:     oPC.getTokens().map(function (t) { return t.getKey(); }),
                 PostingDateFrom:  oDRS.getDateValue()       ? this._formatDate(oDRS.getDateValue())       : "",
                 PostingDateTo:    oDRS.getSecondDateValue() ? this._formatDate(oDRS.getSecondDateValue()) : "",
                 ReportType:       oRT.getSelectedKey()

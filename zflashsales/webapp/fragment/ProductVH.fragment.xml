@@ -1,0 +1,53 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        id="productVHDialog"
+        title="Product"
+        contentWidth="50%"
+        draggable="true"
+        resizable="true">
+
+        <subHeader>
+            <Bar>
+                <contentMiddle>
+                    <SearchField
+                        id="productVHSearchField"
+                        liveChange=".onProductVHSearch"
+                        width="100%" />
+                </contentMiddle>
+                <contentRight>
+                    <Button text="Select All"   press=".onProductVHSelectAll" />
+                    <Button text="Deselect All" press=".onProductVHDeselectAll" />
+                </contentRight>
+            </Bar>
+        </subHeader>
+
+        <content>
+            <List
+                id="productVHList"
+                mode="MultiSelect"
+                growing="true"
+                growingThreshold="50"
+                noDataText="No products found"
+                items="{
+                    path: 'I_ProductStdVH>/I_ProductStdVH'
+                }">
+                <StandardListItem
+                    title="{I_ProductStdVH>Product}"
+                    description="{I_ProductStdVH>Product_Text}"
+                    type="Active" />
+            </List>
+        </content>
+
+        <beginButton>
+            <Button text="OK" type="Emphasized" press=".onProductVHConfirm" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press=".onVHCancel" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>
