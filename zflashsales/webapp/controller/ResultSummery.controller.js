@@ -323,6 +323,131 @@ sap.ui.define([
                     if (sAction !== MessageBox.Action.OK) { return; }
 
                     // Open the Window File Browser to choose the location to save the file
+                    // var fnCallDownload = function (s_filePath) {
+                        oView.setBusy(true);
+                        var oFirst = aResults[0];
+
+                        oModel.callFunction("/formatFileContent", {
+                            method: "POST",
+                            urlParameters: {
+                                sourceledger: oFirst.sourceledger || "",
+                                CompanyCode: oFirst.CompanyCode || "",
+                                FiscalYearPeriod: oFirst.FiscalYearPeriod || "",
+                                GLAccount: oFirst.GLAccount || "",
+                                Product: oFirst.Product || "",
+                                entityName: "FlashSalesSummery",
+                                fullData: JSON.stringify(aResults),
+                                actName: "FORMATFILE",
+                                filePath: ""
+                            },
+                            success: function (oData) {
+                                oView.setBusy(false);
+
+                                // var sFileContent = oData && oData.formatFileContent
+                                //     ? oData.formatFileContent.FileContent
+                                //     : "";
+
+                                var aFileContent = JSON.parse(oData.formatFileContent.FileContent);
+
+                                if (!aFileContent || aFileContent.length === 0) {
+                                    MessageBox.error("No file content returned from the server.");
+                                    return;
+                                }
+
+                                // aFileContent is an array of rows — join with Windows newline
+                                var sFileContent = aFileContent.join("\r\n");
+
+                                var sSuggestedName = "FS_" + (oFirst.CompanyCode || "") + "_" + (oFirst.FiscalYearPeriod || "") + ".TXT";
+                                var oBlob = new Blob([sFileContent], { type: "text/plain;charset=utf-8;" });
+                                var oUrl = URL.createObjectURL(oBlob);
+                                var oLink = document.createElement("a");
+                                oLink.href = oUrl;
+                                oLink.download = sSuggestedName;
+                                oLink.style.display = "none";
+                                document.body.appendChild(oLink);
+                                oLink.click();
+                                document.body.removeChild(oLink);
+                                URL.revokeObjectURL(oUrl);
+
+                                MessageToast.show("File \"" + sSuggestedName + "\" downloaded successfully.");
+                            }.bind(this),
+                            error: function () {
+                                oView.setBusy(false);
+                                MessageBox.error("Failed to download file. Please try again.");
+                            }.bind(this)
+                        });
+                    // }.bind(this);
+
+                    // var oFirst = aResults[0];
+                    // var sSuggestedName = "FS_" + (oFirst.CompanyCode || "") + "_" + (oFirst.FiscalYearPeriod || "") + ".TXT";
+                    // var sNtId = (sap.ushell && sap.ushell.Container)
+                    //     ? sap.ushell.Container.getUser().getId()
+                    //     : "01301F744";
+                    // var sDefaultPath = "C:\\Users\\" + sNtId + "\\Downloads\\" + sSuggestedName;
+
+                    // var oPathInput = new Input({
+                    //     value: sDefaultPath,
+                    //     width: "100%"
+                    // });
+
+                    // var oFileDialog = new Dialog({
+                    //     title: "Select File Save Location",
+                    //     contentWidth: "50%",
+                    //     resizable: true,
+                    //     draggable: true,
+                        // content: [
+                        //     new VBox({
+                        //         renderType: "Bare",
+                        //         items: [
+                        //             new Label({ text: "File Path:", labelFor: oPathInput }),
+                        //             oPathInput
+                        //         ]
+                        //     })
+                        // ],
+                        // beginButton: new Button({
+                        //     text: "OK",
+                        //     type: "Emphasized",
+                        //     press: function () {
+                        //         var s_filePath = oPathInput.getValue().trim();
+                        //         if (!s_filePath) {
+                        //             MessageToast.show("Please enter a file path.");
+                        //             return;
+                        //         }
+                        //         oFileDialog.close();
+                        //         fnCallDownload(s_filePath);
+                        //     }
+                        // }),
+                        // endButton: new Button({
+                        //     text: "Cancel",
+                        //     press: function () {
+                        //         oFileDialog.close();
+                        //     }
+                        // }),
+                        // afterClose: function () {
+                        //     oFileDialog.destroy();
+                        // }
+                    // });
+
+                    // oFileDialog.open();
+                }.bind(this)
+            });
+        },        
+
+        onPCDownloadOLD: function () {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel();
+            var aResults = oView.getModel("flashSalesData").getProperty("/results");
+
+            if (!aResults || aResults.length === 0) {
+                MessageToast.show("No data available to download.");
+                return;
+            }
+
+            MessageBox.confirm("You want to download the Flash Sales Summary File?", {
+                onClose: function (sAction) {
+                    if (sAction !== MessageBox.Action.OK) { return; }
+
+                    // Open the Window File Browser to choose the location to save the file
                     var fnCallDownload = function (s_filePath) {
                         oView.setBusy(true);
                         var oFirst = aResults[0];
