@@ -210,3 +210,93 @@
     font-size: 0.75rem;
     color: #6a6d70;
 }
+
+/* ============================================================
+   Flash Sales Extractor – Value Help Dialog Styles
+   ============================================================ */
+
+/* ── Dialog header – full-width blue title bar ──────────────── */
+/*
+ * In this SAP UI5 version, sapMDialogTitle is the class on the title TEXT SPAN,
+ * not on the outer <header> bar element. We therefore:
+ *   1. Reset the span's own background so it no longer shows as a pill.
+ *   2. Target the actual Bar (sapMIBar) that wraps the title span.
+ */
+
+/* 1. Reset the title span so it has no background of its own */
+.flashSalesVHDialog .sapMDialogTitle {
+    background: transparent !important;
+    color: #ffffff !important;
+}
+
+/* 2. Color the actual header Bar – two selectors cover both possible DOM layouts:
+      a) <header><div class="sapMIBar">…</div></header>
+      b) <div class="sapMIBar">…<span class="sapMDialogTitle">…</span>…</div>  */
+.flashSalesVHDialog header .sapMIBar,
+.flashSalesVHDialog .sapMIBar:has(.sapMDialogTitle) {
+    background: linear-gradient(135deg, #b9c3cc 0%, #6688aa 100%) !important;
+    border-bottom: none !important;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* 3. White title text and action icons inside the header Bar */
+.flashSalesVHDialog header .sapMIBar .sapMTitle,
+.flashSalesVHDialog .sapMIBar:has(.sapMDialogTitle) .sapMTitle {
+    color: #ffffff !important;
+}
+
+.flashSalesVHDialog header .sapUiIcon,
+.flashSalesVHDialog header .sapMBtnIcon,
+.flashSalesVHDialog .sapMIBar:has(.sapMDialogTitle) .sapUiIcon,
+.flashSalesVHDialog .sapMIBar:has(.sapMDialogTitle) .sapMBtnIcon {
+    color: rgba(255, 255, 255, 0.90) !important;
+}
+
+/* ── Sub-header bar (search field + Select All / Deselect All) */
+.flashSalesVHSubHeader {
+    background-color: #f5f6f7 !important;
+    border-bottom: 2px solid #0a6ed1;
+}
+
+/* "Select All" / "Deselect All" buttons – filled blue with white text */
+.flashSalesVHSubHeader .sapMBtn .sapMBtnInner {
+    background-color: #0a6ed1 !important;
+    border-color: #0854a0 !important;
+    border-radius: 0.25rem;
+}
+
+.flashSalesVHSubHeader .sapMBtn .sapMBtnContent {
+    color: #ffffff !important;
+}
+
+.flashSalesVHSubHeader .sapMBtn:hover .sapMBtnInner {
+    background-color: #0854a0 !important;
+    border-color: #064280 !important;
+}
+
+/* ── List items ─────────────────────────────────────────────── */
+.flashSalesVHList .sapMSLITitle {
+    font-weight: 600;
+    color: #1a3a5c;
+}
+
+.flashSalesVHList .sapMSLIDescription {
+    color: #6a6d70;
+    font-size: 0.8rem;
+}
+
+/* Subtle hover highlight (un-selected rows only) */
+.flashSalesVHList .sapMLIB:not(.sapMLIBSelected):hover {
+    background-color: #deeaf8 !important;
+}
+
+/* Alternate row shading */
+.flashSalesVHList .sapMLIB:not(.sapMLIBSelected):nth-child(even) {
+    background-color: #f5f9ff;
+}
+
+/* ── Dialog footer ──────────────────────────────────────────── */
+.flashSalesVHDialog .sapMDialogFooter {
+    background-color: #f5f6f7;
+    border-top: 1px solid #d9d9d9;
+}

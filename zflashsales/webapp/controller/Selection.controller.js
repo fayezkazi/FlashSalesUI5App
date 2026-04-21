@@ -475,6 +475,82 @@ sap.ui.define([
         },
 
         onDisplay: function () {
+            this._validatePendingInputs(this._executeDisplay.bind(this));
+        },
+
+        // Validates any pending (un-tokenized) typed values in all MultiInput fields.
+        // Processes them sequentially; calls fnCallback only when all pass.
+        _validatePendingInputs: function (fnCallback) {
+            var oView  = this.getView();
+            var oModel = oView.getModel();
+
+            var aInputs = [
+                {
+                    input:     oView.byId("companyCodeInput"),
+                    entitySet: "/I_CompanyCode",
+                    keyField:  "CompanyCode",
+                    textField: "CompanyCodeName",
+                    label:     "Company Code"
+                },
+                {
+                    input:     oView.byId("glAccountInput"),
+                    entitySet: "/I_GLAccountStdVH",
+                    keyField:  "GLAccount",
+                    textField: "GLAccount_Text",
+                    label:     "GL Account"
+                },
+                {
+                    input:     oView.byId("productInput"),
+                    entitySet: "/I_ProductStdVH",
+                    keyField:  "Product",
+                    textField: "Product_Text",
+                    label:     "Product"
+                },
+                {
+                    input:     oView.byId("profitCenterInput"),
+                    entitySet: "/I_ProfitCenterStdVH",
+                    keyField:  "ProfitCenter",
+                    textField: "ProfitCenter_Text",
+                    label:     "Profit Center"
+                }
+            ].filter(function (oItem) {
+                return oItem.input.getValue().trim() !== "";
+            });
+
+            var fnValidateNext = function (iIndex) {
+                if (iIndex >= aInputs.length) {
+                    fnCallback();
+                    return;
+                }
+                var oItem  = aInputs[iIndex];
+                var sValue = oItem.input.getValue().trim();
+
+                oModel.read(oItem.entitySet, {
+                    filters: [new Filter(oItem.keyField, FilterOperator.EQ, sValue)],
+                    urlParameters: { "$top": "1" },
+                    success: function (oData) {
+                        if (oData.results && oData.results.length > 0) {
+                            var sText = oData.results[0][oItem.textField];
+                            oItem.input.addToken(new Token({
+                                key:  sValue,
+                                text: sValue + (sText ? " \u2013 " + sText : "")
+                            }));
+                            oItem.input.setValue("");
+                            fnValidateNext(iIndex + 1);
+                        } else {
+                            MessageBox.error("Invalid " + oItem.label + ": \"" + sValue + "\"");
+                        }
+                    },
+                    error: function () {
+                        MessageBox.error("Could not validate " + oItem.label + ".");
+                    }
+                });
+            }.bind(this);
+
+            fnValidateNext(0);
+        },
+
+        _executeDisplay: function () {
             var oView  = this.getView();
             var oSL    = oView.byId("sourceLedgerInput");
             var oFP    = oView.byId("fiscalYearPeriodInput");

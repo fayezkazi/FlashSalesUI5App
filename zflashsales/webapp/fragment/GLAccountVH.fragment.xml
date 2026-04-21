@@ -7,10 +7,11 @@
         title="G/L Account"
         contentWidth="50%"
         draggable="true"
-        resizable="true">
+        resizable="true"
+        class="flashSalesVHDialog">
 
         <subHeader>
-            <Bar>
+            <Bar class="flashSalesVHSubHeader">
                 <contentMiddle>
                     <SearchField
                         id="glAccountVHSearchField"
@@ -27,6 +28,7 @@
         <content>
             <List
                 id="glAccountVHList"
+                class="flashSalesVHList"
                 mode="MultiSelect"
                 growing="true"
                 growingThreshold="50"

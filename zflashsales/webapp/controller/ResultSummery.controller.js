@@ -27,7 +27,9 @@ sap.ui.define([
                     FiscalYearPeriod: "",
                     CompanyCodeDisplay: "",
                     GLAccountDisplay: "",
-                    PostingDateDisplay: ""
+                    PostingDateDisplay: "",
+                    ProductDisplay: "",
+                    ProfitCenterDisplay: ""
                 },
                 recordCount: 0,
                 amountByCurrency: [],
@@ -66,6 +68,16 @@ sap.ui.define([
                 ? aGL.slice(0, 3).join(", ") + ", ..."
                 : aGL.join(", ");
 
+            var aProd = oFilterData.Product && oFilterData.Product.length > 0 ? oFilterData.Product : [];
+            var sProd = aProd.length > 3
+                ? aProd.slice(0, 3).join(", ") + ", ..."
+                : aProd.join(", ");
+
+            var aPC = oFilterData.ProfitCenter && oFilterData.ProfitCenter.length > 0 ? oFilterData.ProfitCenter : [];
+            var sPC = aPC.length > 3
+                ? aPC.slice(0, 3).join(", ") + ", ..."
+                : aPC.join(", ");
+
             var sDate = "";
             if (oFilterData.PostingDateFrom && oFilterData.PostingDateTo) {
                 sDate = oFilterData.PostingDateFrom + " \u2013 " + oFilterData.PostingDateTo;
@@ -80,7 +92,9 @@ sap.ui.define([
                 FiscalYearPeriod: oFilterData.FiscalYearPeriod || "",
                 CompanyCodeDisplay: sCC,
                 GLAccountDisplay: sGL,
-                PostingDateDisplay: sDate
+                ProductDisplay: sProd,
+                ProfitCenterDisplay: sPC,
+                PostingDateDisplay: sDate,
             });
         },
 
@@ -140,6 +154,26 @@ sap.ui.define([
                     : new Filter({ filters: aGLFilters, and: false }));
             }
 
+                // Product — multiple values joined with OR
+            if (oFilterData.Product && oFilterData.Product.length > 0) {
+                var aProdFilters = oFilterData.Product.map(function (sProd) {
+                    return new Filter("Product", FilterOperator.EQ, sProd);
+                });
+                aFilters.push(aProdFilters.length === 1
+                    ? aProdFilters[0]
+                    : new Filter({ filters: aProdFilters, and: false }));
+            }
+
+            // Profit Center — multiple values joined with OR
+            if (oFilterData.ProfitCenter && oFilterData.ProfitCenter.length > 0) {
+                var aPCFilters = oFilterData.ProfitCenter.map(function (sPC) {
+                    return new Filter("ProfitCenter", FilterOperator.EQ, sPC);
+                });
+                aFilters.push(aPCFilters.length === 1
+                    ? aPCFilters[0]
+                    : new Filter({ filters: aPCFilters, and: false }));
+            }
+            
             // Posting Date range
             if (oFilterData.PostingDateFrom) {
                 aFilters.push(new Filter("PostingDateFrom", FilterOperator.GE, new Date(oFilterData.PostingDateFrom)));

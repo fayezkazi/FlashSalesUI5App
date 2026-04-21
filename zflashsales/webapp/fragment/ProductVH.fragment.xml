@@ -7,10 +7,11 @@
         title="Product"
         contentWidth="50%"
         draggable="true"
-        resizable="true">
+        resizable="true"
+        class="flashSalesVHDialog">
 
         <subHeader>
-            <Bar>
+            <Bar class="flashSalesVHSubHeader">
                 <contentMiddle>
                     <SearchField
                         id="productVHSearchField"
@@ -27,6 +28,7 @@
         <content>
             <List
                 id="productVHList"
+                class="flashSalesVHList"
                 mode="MultiSelect"
                 growing="true"
                 growingThreshold="50"

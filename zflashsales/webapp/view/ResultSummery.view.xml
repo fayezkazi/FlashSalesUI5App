@@ -72,6 +72,20 @@
                         visible="{= !!${viewData>/filters/GLAccountDisplay} }"
                     />
                     <ObjectStatus
+                        title="Product"
+                        text="{viewData>/filters/ProductDisplay}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                        visible="{= !!${viewData>/filters/ProductDisplay} }"
+                    />  
+                    <ObjectStatus
+                        title="Profit Center"
+                        text="{viewData>/filters/ProfitCenterDisplay}"
+                        state="Information"
+                        class="sapUiSmallMarginBegin"
+                        visible="{= !!${viewData>/filters/ProfitCenterDisplay} }"                  
+                    />
+                    <ObjectStatus
                         title="Posting Date"
                         text="{viewData>/filters/PostingDateDisplay}"
                         state="Information"
